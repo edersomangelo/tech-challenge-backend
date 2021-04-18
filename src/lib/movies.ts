@@ -12,3 +12,7 @@ export interface Movie {
 export function list(): Promise<Movie[]> {
   return knex.from('movie').select()
 }
+
+export function find(id: number): Promise<Movie> {
+  return knex.from('movie').where({ id }).first()
+}
