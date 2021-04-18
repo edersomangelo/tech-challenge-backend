@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create } from './movies'
+import { list, find, remove, create, update } from './movies'
 import { knex } from '../util/knex'
 import { PayloadMovie } from '../data/models/movies'
 
@@ -35,6 +35,7 @@ describe('lib', () => describe('movie', () => {
       knex_delete: sandbox.stub(knex, 'delete'),
       knex_into: sandbox.stub(knex, 'into'),
       knex_insert: sandbox.stub(knex, 'insert'),
+      knex_update: sandbox.stub(knex, 'update'),
     }
   })
 
@@ -46,7 +47,6 @@ describe('lib', () => describe('movie', () => {
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
     context.stub.knex_into.returnsThis()
-    context.stub.knex_insert.rejects(new Error('test: expectation not provided'))
   })
 
   afterEach(() => sandbox.resetHistory())
@@ -119,11 +119,9 @@ describe('lib', () => describe('movie', () => {
       await create(request)
       sinon.assert.calledOnceWithExactly(context.stub.knex_into, 'movie')
       sinon.assert.calledOnceWithExactly(context.stub.knex_insert, {
-        id: request.id,
         name: request.name,
         release_date: request.releasedAt,
-        runtime: request.runtime,
-        synopsis: request.synopsis
+        runtime: request.runtime
       })
     })
 
@@ -137,6 +135,21 @@ describe('lib', () => describe('movie', () => {
       const result = await create(request)
       expect(result).to.be.number()
       expect(result).equals(anyId)
+    })
+  })
+
+  describe('update', () => {
+
+    it('updates one row from table `movie`, by `id`', async ({context}: Flags) => {
+      const anyId = 123
+      if(!isContext(context)) throw TypeError()
+      const request = {synopsis: 'any content'}
+      context.stub.knex_update.resolves()
+
+      await update(anyId, request)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'movie')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_where, { id: anyId })
+      sinon.assert.calledOnceWithExactly(context.stub.knex_update, request)
     })
   })
 }))
