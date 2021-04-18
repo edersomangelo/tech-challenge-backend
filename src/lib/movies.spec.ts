@@ -1,10 +1,11 @@
 import { script } from '@hapi/lab'
+import { expect } from '@hapi/code'
 import sinon from 'sinon'
 
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find } from './movies'
+import { list, find, remove } from './movies'
 import { knex } from '../util/knex'
 
 describe('lib', () => describe('movie', () => {
@@ -30,6 +31,7 @@ describe('lib', () => describe('movie', () => {
       knex_select: sandbox.stub(knex, 'select'),
       knex_where: sandbox.stub(knex, 'where'),
       knex_first: sandbox.stub(knex, 'first'),
+      knex_delete: sandbox.stub(knex, 'delete'),
     }
   })
 
@@ -67,5 +69,31 @@ describe('lib', () => describe('movie', () => {
       sinon.assert.calledOnceWithExactly(context.stub.knex_where, { id: anyId })
       sinon.assert.calledOnce(context.stub.knex_first)
     })
+  })
+
+  describe('remove', () => {
+
+    it('removes one row from table `movie`, by `id`', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyId = 123
+      context.stub.knex_delete.resolves()
+
+      await remove(anyId)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'movie')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_where, { id: anyId })
+      sinon.assert.calledOnce(context.stub.knex_delete)
+    })
+
+    ; [0, 1].forEach( rows =>
+      it(`returns ${!!rows} when (${rows}) row is found and deleted`, async ({context}: Flags) => {
+        if(!isContext(context)) throw TypeError()
+        context.stub.knex_delete.resolves(rows)
+        const anyId = 123
+
+        const result = await remove(anyId)
+        expect(result).to.be.boolean()
+        expect(result).equals(!!rows)
+      }))
+
   })
 }))
