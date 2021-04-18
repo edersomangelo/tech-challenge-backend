@@ -5,8 +5,9 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove } from './movies'
+import { list, find, remove, create } from './movies'
 import { knex } from '../util/knex'
+import { PayloadMovie } from '../data/models/movies'
 
 describe('lib', () => describe('movie', () => {
   const sandbox = Object.freeze(sinon.createSandbox())
@@ -32,6 +33,8 @@ describe('lib', () => describe('movie', () => {
       knex_where: sandbox.stub(knex, 'where'),
       knex_first: sandbox.stub(knex, 'first'),
       knex_delete: sandbox.stub(knex, 'delete'),
+      knex_into: sandbox.stub(knex, 'into'),
+      knex_insert: sandbox.stub(knex, 'insert'),
     }
   })
 
@@ -42,10 +45,19 @@ describe('lib', () => describe('movie', () => {
     context.stub.knex_select.returnsThis()
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
+    context.stub.knex_into.returnsThis()
+    context.stub.knex_insert.rejects(new Error('test: expectation not provided'))
   })
 
   afterEach(() => sandbox.resetHistory())
   after(() => sandbox.restore())
+
+
+  const makeRequest = ():PayloadMovie =>({
+    'name': 'any-name',
+    'releasedAt': new Date,
+    'runtime': 123
+  })
 
   describe('list', () => {
 
@@ -95,5 +107,36 @@ describe('lib', () => describe('movie', () => {
         expect(result).equals(!!rows)
       }))
 
+  })
+
+  describe('create', () => {
+    it('insert one row into table `movie`', async ({context}: Flags) => {
+      const request = makeRequest()
+
+      if(!isContext(context)) throw TypeError()
+      context.stub.knex_insert.resolves([])
+
+      await create(request)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_into, 'movie')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_insert, {
+        id: request.id,
+        name: request.name,
+        release_date: request.releasedAt,
+        runtime: request.runtime,
+        synopsis: request.synopsis
+      })
+    })
+
+    it('returns the `id` created for the new row', async ({context}: Flags) => {
+      const request = makeRequest()
+
+      if(!isContext(context)) throw TypeError()
+      const anyId = 123
+      context.stub.knex_insert.resolves([anyId])
+
+      const result = await create(request)
+      expect(result).to.be.number()
+      expect(result).equals(anyId)
+    })
   })
 }))
