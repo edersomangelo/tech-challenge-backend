@@ -1,13 +1,31 @@
 import { knex } from '../util/knex'
 import { Movie, PayloadMovie } from '../data/models/movies'
 
-const getModel = (payload: PayloadMovie):Movie => ({
-  id: payload.id,
-  name: payload.name,
-  synopsis: payload.synopsis,
-  release_date: payload.releasedAt,
-  runtime: payload.runtime
-})
+const getModel = (payload: Partial<PayloadMovie>):Partial<Movie> => {
+  const movie:Partial<Movie> = {}
+
+  if(typeof(payload.id) == 'number'){
+    movie.id = payload.id
+  }
+
+  if(typeof(payload.name) == 'string'){
+    movie.name = payload.name
+  }
+
+  if(typeof(payload.synopsis) == 'string'){
+    movie.synopsis = payload.synopsis
+  }
+
+  if(payload.releasedAt !== undefined){
+    movie.release_date = payload.releasedAt
+  }
+
+  if(typeof(payload.runtime) == 'number'){
+    movie.runtime = payload.runtime
+  }
+
+  return movie
+}
 
 export function list(): Promise<Movie[]> {
   return knex.from('movie').select()
@@ -28,4 +46,11 @@ export async function create(payload: PayloadMovie): Promise<number> {
   const model = getModel(payload)
   const [ id ] = await (knex.into('movie').insert(model))
   return id
+}
+
+/** @returns whether the ID was actually found */
+export async function update(id: number, payload: Partial<PayloadMovie>): Promise<boolean>  {
+  const model = getModel(payload)
+  const count = await knex.from('movie').where({ id }).update(model)
+  return count > 0
 }
