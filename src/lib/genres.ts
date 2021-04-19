@@ -9,6 +9,17 @@ export function find(id: number): Promise<Genre> {
   return knex.from('genre').where({ id }).first()
 }
 
+export async function findOrCreate(name: string): Promise<number> {
+
+  const result = (await knex.from('genre').where({ name }).first()) as Genre
+
+  if(result != undefined && typeof(result.id) == 'number'){
+    return new Promise(resolve => resolve(Number(result.id)))
+  }
+
+  return await create(name)
+}
+
 /** @returns whether the ID was actually found */
 export async function remove(id: number): Promise<boolean> {
   const count = await knex.from('genre').where({ id }).delete()
