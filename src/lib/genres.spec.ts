@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create, update } from './genres'
+import { list, find, remove, create, update, findOrCreate } from './genres'
 import { knex } from '../util/knex'
 
 describe('lib', () => describe('genre', () => {
@@ -179,6 +179,22 @@ describe('lib', () => describe('genre', () => {
       context.stub.knex_insert.resolves([anyId])
 
       const result = await create(anyName)
+      expect(result).to.be.number()
+      expect(result).equals(anyId)
+    })
+
+  })
+
+  describe('findOrcreate', () => {
+    it('insert one row into table `genre` when genre not exists', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyName = 'any-name'
+      const anyId = 123
+      context.stub.knex_insert.resolves([anyId])
+
+      const result = await findOrCreate(anyName)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_into, 'genre')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_insert, { name: anyName })
       expect(result).to.be.number()
       expect(result).equals(anyId)
     })
