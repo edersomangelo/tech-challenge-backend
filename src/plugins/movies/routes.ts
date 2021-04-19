@@ -10,6 +10,8 @@ import joi from 'joi'
 import Boom from '@hapi/boom'
 
 import * as movies from '../../lib/movies'
+import * as genres from '../../lib/genres'
+import * as movieGenres from '../../lib/movie_genres'
 import { isHasCode } from '../../util/types'
 import { PayloadMovie } from '../../data/models/movies'
 
@@ -28,7 +30,8 @@ const validatePayloadMovie: RouteOptionsResponseSchema = {
     name: joi.string().required(),
     releasedAt: joi.date().required(),
     runtime: joi.number().required(),
-    synopsis: joi.string()
+    synopsis: joi.string(),
+    genres: joi.array()
   })
 }
 
@@ -73,7 +76,12 @@ async function get(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lif
 
 async function post(req: Request, h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
   try {
-    const id = await movies.create(req.payload as PayloadMovie)
+    const payload = req.payload as PayloadMovie
+    const id = await movies.create(payload)
+
+    if(payload.genres != undefined){
+      await populateGenres(payload.genres,id)
+    }
     const result = {
       id,
       path: `${req.route.path}/${id}`
@@ -102,4 +110,16 @@ async function remove(req: Request, h: ResponseToolkit, _err?: Error): Promise<L
   const { id } = (req.params as ParamsId)
 
   return await movies.remove(id) ? h.response().code(204) : Boom.notFound()
+}
+
+async function populateGenres(genresData: Array<string|number>, movieId: number): Promise<void> {
+  for(const genre of genresData) {
+    let genreId = genre
+
+    if(typeof(genre) == 'string'){
+      genreId = await genres.findOrCreate(genre)
+    }
+
+    await movieGenres.create(movieId, Number(genreId))
+  }
 }
