@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create, update } from './movies'
+import { list, find, remove, create, update, listByActorId } from './movies'
 import { knex } from '../util/knex'
 import { PayloadMovie } from '../data/models/movies'
 
@@ -29,6 +29,7 @@ describe('lib', () => describe('movie', () => {
   before(({context}: Flags) => {
     context.stub = {
       knex_from: sandbox.stub(knex, 'from'),
+      knex_join: sandbox.stub(knex, 'join'),
       knex_select: sandbox.stub(knex, 'select'),
       knex_where: sandbox.stub(knex, 'where'),
       knex_first: sandbox.stub(knex, 'first'),
@@ -43,6 +44,7 @@ describe('lib', () => describe('movie', () => {
     if(!isContext(context)) throw TypeError()
 
     context.stub.knex_from.returnsThis()
+    context.stub.knex_join.returnsThis()
     context.stub.knex_select.returnsThis()
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
@@ -66,6 +68,20 @@ describe('lib', () => describe('movie', () => {
 
       await list()
       sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'movie')
+      sinon.assert.calledOnce(context.stub.knex_select)
+    })
+  })
+
+  describe('listMoviesByActor', () => {
+
+    it('returns rows from table `movie`, by `actor_id`', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyActorId = 123
+
+      await listByActorId(anyActorId)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'movie')
+      sinon.assert.calledWithMatch(context.stub.knex_join, 'character')
+      sinon.assert.calledWithExactly(context.stub.knex_where, { actor_id: anyActorId })
       sinon.assert.calledOnce(context.stub.knex_select)
     })
   })
