@@ -12,4 +12,5 @@ export interface PayloadMovie {
   synopsis?: Movie['synopsis']
   releasedAt: Movie['release_date']
   runtime: Movie['runtime']
+  genres?: Array<string|number>
 }
