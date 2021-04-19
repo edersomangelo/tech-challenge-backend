@@ -31,6 +31,10 @@ export function list(): Promise<Movie[]> {
   return knex.from('movie').select()
 }
 
+export function listByActorId(actor_id: number): Promise<Movie[]> {
+  return knex.from('movie').join('movie_character', 'movie_character.movie_id', '=', 'movie.id').where({actor_id}).select('movie.*')
+}
+
 export function find(id: Movie['id']): Promise<Movie> {
   return knex.from('movie').where({ id }).first()
 }
