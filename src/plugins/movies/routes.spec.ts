@@ -8,6 +8,8 @@ const { beforeEach, before, after, afterEach, describe, it } = lab
 import * as Hapi from '@hapi/hapi'
 import { movie as plugin } from './index'
 import * as lib from '../../lib/movies'
+import * as genresLib from '../../lib/genres'
+import * as movieGenresLib from '../../lib/movie_genres'
 import { PayloadMovie } from '../../data/models/movies'
 
 describe('plugin', () => describe('movie', () => {
@@ -35,6 +37,10 @@ describe('plugin', () => describe('movie', () => {
       lib_remove: sandbox.stub(lib, 'remove'),
       lib_create: sandbox.stub(lib, 'create'),
       lib_update: sandbox.stub(lib, 'update'),
+
+      genresLib_findOrCreate: sandbox.stub(genresLib, 'findOrCreate'),
+
+      movieGenresLib_create: sandbox.stub(movieGenresLib, 'create'),
     }
 
     // all stubs must be made before server starts
@@ -126,6 +132,51 @@ describe('plugin', () => describe('movie', () => {
       expect(response.result).equals({
         id: anyResult,
         path: `/movies/${anyResult}`
+      })
+    })
+
+    it('should create movie genres if param `genre` is provided as string', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const payload = makeRequest()
+      payload.genres = ['any genre']
+
+      const opts: Hapi.ServerInjectOptions = { method, url, payload }
+      const movieIdResult = 123
+      const genreIdResult = 12
+      context.stub.lib_create.resolves(movieIdResult)
+      context.stub.genresLib_findOrCreate.resolves(genreIdResult)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(201)
+
+      sinon.assert.calledOnceWithExactly(context.stub.lib_create, payload)
+      sinon.assert.calledOnceWithExactly(context.stub.movieGenresLib_create, movieIdResult, genreIdResult)
+      expect(response.result).equals({
+        id: movieIdResult,
+        path: `/movies/${movieIdResult}`
+      })
+    })
+
+    it('should create movie genres if param `genre` is provided as number', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const genreIdResult = 12
+      const movieIdResult = 123
+
+      const payload = makeRequest()
+      payload.genres = [genreIdResult]
+
+      const opts: Hapi.ServerInjectOptions = { method, url, payload }
+
+      context.stub.lib_create.resolves(movieIdResult)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(201)
+
+      sinon.assert.calledOnceWithExactly(context.stub.lib_create, payload)
+      sinon.assert.calledOnceWithExactly(context.stub.movieGenresLib_create, movieIdResult, genreIdResult)
+      expect(response.result).equals({
+        id: movieIdResult,
+        path: `/movies/${movieIdResult}`
       })
     })
   })
