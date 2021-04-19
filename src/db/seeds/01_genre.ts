@@ -8,5 +8,7 @@ export async function seed(knex: Knex): Promise<void> {
     {id: 4, name: 'Terror'},
     {id: 5, name: 'Adventure'},
     {id: 6, name: 'Action'},
+    {id: 7, name: 'Romance'},
+    {id: 8, name: 'Thriller'}
   ])
 }
