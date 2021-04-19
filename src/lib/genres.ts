@@ -1,9 +1,5 @@
+import { Genre } from '../data/models/genres'
 import { knex } from '../util/knex'
-
-export interface Genre {
-  id: number
-  name: string
-}
 
 export function list(): Promise<Genre[]> {
   return knex.from('genre').select()
