@@ -41,6 +41,11 @@ export const movieRoutes: ServerRoute[] = [{
   path: '/movies',
   handler: getAll,
 },{
+  method: 'GET',
+  path: '/movies/getMoviesByActor/{id}',
+  handler: getMoviesByActor,
+  options: { validate: validateParamsId },
+},{
   method: 'POST',
   path: '/movies',
   handler: post,
@@ -65,6 +70,13 @@ export const movieRoutes: ServerRoute[] = [{
 
 async function getAll(_req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
   return movies.list()
+}
+
+async function getMoviesByActor(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
+  const { id } = (req.params as ParamsId)
+
+  const found = await movies.listByActorId(id)
+  return found || Boom.notFound()
 }
 
 async function get(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
