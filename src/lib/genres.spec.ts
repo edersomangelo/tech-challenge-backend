@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create, update, findOrCreate, findMostFrequentGenreByActorId } from './genres'
+import { list, find, remove, create, update, findOrCreate, findMostFrequentGenreByActorId, listWithMovieAmount } from './genres'
 import { knex } from '../util/knex'
 
 describe('lib', () => describe('genre', () => {
@@ -75,6 +75,24 @@ describe('lib', () => describe('genre', () => {
 
   })
 
+  describe('listWithMovieAmount', () => {
+
+    it('returns rows from table `genre` with movie count', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyId = 123
+
+      await listWithMovieAmount(anyId)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'genre')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_select,'genre.*')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_where, {'movie_character.actor_id': anyId})
+      sinon.assert.calledOnceWithExactly(context.stub.knex_count,'movie_genre.movie_id as occurrences_amount')
+      sinon.assert.calledOnce(context.stub.knex_select)
+      sinon.assert.calledOnce(context.stub.knex_count)
+      sinon.assert.calledOnce(context.stub.knex_groupBy)
+    })
+
+  })
+
   describe('find', () => {
 
     it('returns one row from table `genre`, by `id`', async ({context}: Flags) => {
@@ -98,8 +116,8 @@ describe('lib', () => describe('genre', () => {
       sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'genre')
       sinon.assert.calledOnceWithExactly(context.stub.knex_select,'genre.*')
       sinon.assert.calledOnceWithExactly(context.stub.knex_where, {'movie_character.actor_id': anyId})
+      sinon.assert.calledOnceWithExactly(context.stub.knex_count,'genre.id as occurrences_amount')
       sinon.assert.calledOnce(context.stub.knex_first)
-      sinon.assert.calledOnce(context.stub.knex_count)
       sinon.assert.calledOnce(context.stub.knex_groupBy)
       sinon.assert.calledWith(context.stub.knex_innerJoin,'movie_genre')
       sinon.assert.calledWith(context.stub.knex_innerJoin,'movie_character')
