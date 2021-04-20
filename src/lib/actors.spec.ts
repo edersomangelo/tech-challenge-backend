@@ -36,7 +36,10 @@ describe('lib', () => describe('actor', () => {
       knex_into: sandbox.stub(knex, 'into'),
       knex_insert: sandbox.stub(knex, 'insert'),
       knex_update: sandbox.stub(knex, 'update'),
+      knex_count: sandbox.stub(knex, 'count'),
       knex_innerJoin: sandbox.stub(knex, 'innerJoin'),
+      knex_groupBy: sandbox.stub(knex, 'groupBy'),
+      knex_orderBy: sandbox.stub(knex, 'orderBy'),
     }
   })
 
@@ -48,7 +51,11 @@ describe('lib', () => describe('actor', () => {
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
     context.stub.knex_into.returnsThis()
+    context.stub.knex_update.returnsThis()
+    context.stub.knex_count.returnsThis()
     context.stub.knex_innerJoin.returnsThis()
+    context.stub.knex_groupBy.returnsThis()
+    context.stub.knex_orderBy.returnsThis()
   })
 
   afterEach(() => sandbox.resetHistory())
@@ -82,6 +89,8 @@ describe('lib', () => describe('actor', () => {
       sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'actor')
       sinon.assert.calledOnceWithExactly(context.stub.knex_where, {genre_id: anyId})
       sinon.assert.calledWithMatch(context.stub.knex_innerJoin,'movie_genre')
+      sinon.assert.calledWithMatch(context.stub.knex_orderBy,'movie_occurrences')
+      sinon.assert.calledOnce(context.stub.knex_groupBy)
       sinon.assert.calledOnce(context.stub.knex_select)
     })
   })
