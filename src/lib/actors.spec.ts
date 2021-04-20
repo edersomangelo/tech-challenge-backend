@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create, update } from './actors'
+import { list, find, remove, create, update, listByGenreId } from './actors'
 import { knex } from '../util/knex'
 import { PayloadActor } from '../data/models/actors'
 
@@ -36,6 +36,7 @@ describe('lib', () => describe('actor', () => {
       knex_into: sandbox.stub(knex, 'into'),
       knex_insert: sandbox.stub(knex, 'insert'),
       knex_update: sandbox.stub(knex, 'update'),
+      knex_innerJoin: sandbox.stub(knex, 'innerJoin'),
     }
   })
 
@@ -47,6 +48,7 @@ describe('lib', () => describe('actor', () => {
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
     context.stub.knex_into.returnsThis()
+    context.stub.knex_innerJoin.returnsThis()
   })
 
   afterEach(() => sandbox.resetHistory())
@@ -66,6 +68,20 @@ describe('lib', () => describe('actor', () => {
 
       await list()
       sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'actor')
+      sinon.assert.calledOnce(context.stub.knex_select)
+    })
+  })
+
+  describe('listByGenreId', () => {
+
+    it('returns rows from table `actor`, by `genre_id`', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyId = 123
+
+      await listByGenreId(anyId)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'actor')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_where, {genre_id: anyId})
+      sinon.assert.calledWithMatch(context.stub.knex_innerJoin,'movie_genre')
       sinon.assert.calledOnce(context.stub.knex_select)
     })
   })
