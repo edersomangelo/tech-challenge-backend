@@ -5,6 +5,21 @@ export function list(): Promise<Genre[]> {
   return knex.from('genre').select()
 }
 
+/*
+View Actor's number of Movies in Genres
+As a user, I want to get the number of movies by genre on an actor profile page.
+*/
+export async function listWithMovieAmount(actorId: number): Promise<GenreWithAmount[]> {
+  return (knex.select('genre.*')
+    .count('movie_genre.movie_id as occurrences_amount')
+    .from('genre')
+    .innerJoin('movie_genre', 'genre.id', 'movie_genre.genre_id')
+    .innerJoin('movie_character', 'movie_genre.movie_id', 'movie_character.movie_id')
+    .where({'movie_character.actor_id': actorId})
+    .groupBy('genre.name', 'genre.id')
+    .orderBy('occurrences_amount', 'desc')) as unknown as Promise<GenreWithAmount[]>
+}
+
 export function find(id: number): Promise<Genre> {
   return knex.from('genre').where({ id }).first()
 }
