@@ -31,7 +31,6 @@ const validatePayloadGenre: RouteOptionsResponseSchema = {
   })
 }
 
-
 export const genreRoutes: ServerRoute[] = [{
   method: 'GET',
   path: '/genres',
@@ -45,6 +44,11 @@ export const genreRoutes: ServerRoute[] = [{
   method: 'GET',
   path: '/genres/{id}',
   handler: get,
+  options: { validate: validateParamsId },
+},{
+  method: 'GET',
+  path: '/genres/MostFrequentGenreByActorId/{id}',
+  handler: getMostFrequentGenreByActorId,
   options: { validate: validateParamsId },
 },{
   method: 'PUT',
@@ -67,6 +71,13 @@ async function get(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lif
   const { id } = (req.params as ParamsId)
 
   const found = await genres.find(id)
+  return found || Boom.notFound()
+}
+
+async function getMostFrequentGenreByActorId(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
+  const { id } = (req.params as ParamsId)
+
+  const found = await genres.findMostFrequentGenreByActorId(id)
   return found || Boom.notFound()
 }
 
