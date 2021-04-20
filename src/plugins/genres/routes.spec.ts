@@ -32,6 +32,7 @@ describe('plugin', () => describe('genre', () => {
       lib_list: sandbox.stub(lib, 'list'),
       lib_find: sandbox.stub(lib, 'find'),
       lib_findMostFrequentGenreByActorId: sandbox.stub(lib, 'findMostFrequentGenreByActorId'),
+      lib_listWithMovieAmount: sandbox.stub(lib, 'listWithMovieAmount'),
       lib_remove: sandbox.stub(lib, 'remove'),
       lib_create: sandbox.stub(lib, 'create'),
       lib_update: sandbox.stub(lib, 'update'),
@@ -156,6 +157,42 @@ describe('plugin', () => describe('genre', () => {
       expect(response.statusCode).equals(200)
 
       sinon.assert.calledOnceWithExactly(context.stub.lib_findMostFrequentGenreByActorId, paramId)
+      expect(response.result).equals(anyResult)
+    })
+
+  })
+
+  describe('GET /genres/GenreWithMovieAmountByActorId/:id', () => {
+    const paramId = 123
+    const [method, url] = ['GET', `/genres/GenreWithMovieAmountByActorId/${paramId}`]
+
+    it('validates :id is numeric', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url: 'not-a-number' }
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(400)
+    })
+
+    it('returns HTTP 404 when :id is not found', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url }
+      context.stub.lib_find.resolves(null)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(404)
+    })
+
+    it('returns genre with movie amount by `actor_id`', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url }
+      const anyResult = {'any': 'result'}
+      context.stub.lib_listWithMovieAmount.resolves(anyResult)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(200)
+
+      sinon.assert.calledOnceWithExactly(context.stub.lib_listWithMovieAmount, paramId)
       expect(response.result).equals(anyResult)
     })
 
