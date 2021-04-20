@@ -5,7 +5,7 @@ import sinon from 'sinon'
 export const lab = script()
 const { beforeEach, before, after, afterEach, describe, it } = lab
 
-import { list, find, remove, create, update, findOrCreate } from './genres'
+import { list, find, remove, create, update, findOrCreate, findMostFrequentGenreByActorId } from './genres'
 import { knex } from '../util/knex'
 
 describe('lib', () => describe('genre', () => {
@@ -34,6 +34,11 @@ describe('lib', () => describe('genre', () => {
       knex_into: sandbox.stub(knex, 'into'),
       knex_insert: sandbox.stub(knex, 'insert'),
       knex_update: sandbox.stub(knex, 'update'),
+      knex_innerJoin: sandbox.stub(knex, 'innerJoin'),
+      knex_groupBy: sandbox.stub(knex, 'groupBy'),
+      knex_orderBy: sandbox.stub(knex, 'orderBy'),
+      knex_count: sandbox.stub(knex, 'count'),
+
       console: sandbox.stub(console, 'error'),
     }
   })
@@ -46,6 +51,10 @@ describe('lib', () => describe('genre', () => {
     context.stub.knex_where.returnsThis()
     context.stub.knex_first.returnsThis()
     context.stub.knex_into.returnsThis()
+    context.stub.knex_count.returnsThis()
+    context.stub.knex_innerJoin.returnsThis()
+    context.stub.knex_orderBy.returnsThis()
+    context.stub.knex_groupBy.returnsThis()
     context.stub.knex_delete.rejects(new Error('test: expectation not provided'))
     context.stub.knex_insert.rejects(new Error('test: expectation not provided'))
     context.stub.knex_update.rejects(new Error('test: expectation not provided'))
@@ -76,6 +85,24 @@ describe('lib', () => describe('genre', () => {
       sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'genre')
       sinon.assert.calledOnceWithExactly(context.stub.knex_where, { id: anyId })
       sinon.assert.calledOnce(context.stub.knex_first)
+    })
+
+  })
+
+  describe('findMostFrequentGenreByActorId', () => {
+    it('returns one row from table `genre`, by `actor_id`', async ({context}: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const anyId = 123
+
+      await findMostFrequentGenreByActorId(anyId)
+      sinon.assert.calledOnceWithExactly(context.stub.knex_from, 'genre')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_select,'genre.*')
+      sinon.assert.calledOnceWithExactly(context.stub.knex_where, {'movie_character.actor_id': anyId})
+      sinon.assert.calledOnce(context.stub.knex_first)
+      sinon.assert.calledOnce(context.stub.knex_count)
+      sinon.assert.calledOnce(context.stub.knex_groupBy)
+      sinon.assert.calledWith(context.stub.knex_innerJoin,'movie_genre')
+      sinon.assert.calledWith(context.stub.knex_innerJoin,'movie_character')
     })
 
   })
