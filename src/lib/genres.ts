@@ -1,4 +1,4 @@
-import { Genre } from '../data/models/genres'
+import { Genre, GenreWithAmount } from '../data/models/genres'
 import { knex } from '../util/knex'
 
 export function list(): Promise<Genre[]> {
@@ -7,6 +7,18 @@ export function list(): Promise<Genre[]> {
 
 export function find(id: number): Promise<Genre> {
   return knex.from('genre').where({ id }).first()
+}
+
+export function findMostFrequentGenreByActorId(actorId: number): Promise<GenreWithAmount> {
+  return (knex.select('genre.*')
+    .count('genre.id as occurrences_amount')
+    .from('genre')
+    .innerJoin('movie_genre', 'genre.id', 'movie_genre.genre_id')
+    .innerJoin('movie_character', 'movie_genre.movie_id', 'movie_character.movie_id')
+    .where({'movie_character.actor_id': actorId})
+    .groupBy('genre.id','genre.name')
+    .orderBy('occurrences_amount', 'desc')
+    .first()) as unknown as Promise<GenreWithAmount>
 }
 
 export async function findOrCreate(name: string): Promise<number> {
