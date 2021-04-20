@@ -31,7 +31,6 @@ const validatePayloadActor: RouteOptionsResponseSchema = {
   })
 }
 
-
 export const actorRoutes: ServerRoute[] = [{
   method: 'GET',
   path: '/actors',
@@ -41,6 +40,11 @@ export const actorRoutes: ServerRoute[] = [{
   path: '/actors',
   handler: post,
   options: { validate: validatePayloadActor },
+},{
+  method: 'GET',
+  path: '/actors/GetAllByGenreId/{id}',
+  handler: getAllByGenreId,
+  options: { validate: validateParamsId },
 },{
   method: 'GET',
   path: '/actors/{id}',
@@ -67,6 +71,13 @@ async function get(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lif
   const { id } = (req.params as ParamsId)
 
   const found = await actors.find(id)
+  return found || Boom.notFound()
+}
+
+async function getAllByGenreId(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
+  const { id } = (req.params as ParamsId)
+
+  const found = await actors.listByGenreId(id)
   return found || Boom.notFound()
 }
 
