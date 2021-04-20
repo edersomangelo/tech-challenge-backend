@@ -1,0 +1,43 @@
+@baseUrl=http://localhost:8080/actors
+@id={{create.response.body.id}}
+
+# @name getAll
+GET {{baseUrl}}
+
+###
+
+# @name create
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "name": "Some Actor Name",
+  "bornAt": "2021-04-20T00:00:00.000Z",
+  "bio": "some actor bio"
+}
+###
+
+# @name getOne
+GET {{baseUrl}}/{{id}}
+
+###
+
+# @name update
+PUT {{baseUrl}}/{{id}}
+
+{
+  "name": "Some Actor Name",
+  "bornAt": "2021-04-20T00:00:00.000Z",
+  "bio": "some actor bio"
+}
+###
+
+# @name remove
+DELETE {{baseUrl}}/{{id}}
+
+###
+
+# @name remove
+GET {{baseUrl}}/GetAllByGenreId/{{id}}
+
+###

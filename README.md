@@ -50,23 +50,23 @@ Actor payload:
 
 ### MG-0004 View Actor's movie appearances
 
-As a user, I want to get a list of movies that a given Actor starred on.
+&#x2713; As a user, I want to get a list of movies that a given Actor starred on.
 
 ### MG-0005. Select one of the following:
 
-1. View Actor's favorite genre
+1. &#x2713; View Actor's favorite genre
 As a user, I want to get the favorite genre of a given Actor.
 Business Rule: the favorite genre is the one with the most appearances.
 
-2. View Actor's number of Movies in Genres
+2. &#x2713; View Actor's number of Movies in Genres
 As a user, I want to get the number of movies by genre on an actor profile page.
 
-3. View Actors in a Genre
+3. &#x2713; View Actors in a Genre
 As a user, I want to get a list of actors for a given Genre ordered by movie appearances.
 
 ### MG-0006. View Actor's character names
 
-As a user, I want to get a list of character names of a given Actor.
+&#x2713; As a user, I want to get a list of character names of a given Actor.
 
 
 ## Development notes

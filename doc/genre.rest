@@ -32,3 +32,13 @@ PUT {{baseUrl}}/{{id}}
 DELETE {{baseUrl}}/{{id}}
 
 ###
+
+# @name MostFrequentGenreByActorId
+GET {{baseUrl}}/MostFrequentGenreByActorId/{{id}}
+
+###
+
+# @name GenreWithMovieAmountByActorId
+GET {{baseUrl}}/GenreWithMovieAmountByActorId/{{id}}
+
+###
