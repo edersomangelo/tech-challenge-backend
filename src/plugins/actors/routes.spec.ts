@@ -31,6 +31,7 @@ describe('plugin', () => describe('actor', () => {
   before(async ({ context }: Flags) => {
     context.stub = {
       lib_list: sandbox.stub(lib, 'list'),
+      lib_listByGenreId: sandbox.stub(lib, 'listByGenreId'),
       lib_find: sandbox.stub(lib, 'find'),
       lib_remove: sandbox.stub(lib, 'remove'),
       lib_create: sandbox.stub(lib, 'create'),
@@ -79,6 +80,41 @@ describe('plugin', () => describe('actor', () => {
       expect(response.result).equals(anyResult)
     })
 
+  })
+
+  describe('GET /actors/GetAllByGenreId/:id', () => {
+    const paramId = 123
+    const [method, url] = ['GET', `/actors/GetAllByGenreId/${paramId}`]
+
+    it('validates :id is numeric', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url: 'not-a-number' }
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(400)
+    })
+
+    it('returns HTTP 404 when :id is not found', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url }
+      context.stub.lib_find.resolves(null)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(404)
+    })
+
+    it('returns one actor', async ({ context }: Flags) => {
+      if(!isContext(context)) throw TypeError()
+      const opts: Hapi.ServerInjectOptions = { method, url }
+      const anyResult = {'any': 'result'}
+      context.stub.lib_listByGenreId.resolves(anyResult)
+
+      const response = await context.server.inject(opts)
+      expect(response.statusCode).equals(200)
+
+      sinon.assert.calledOnceWithExactly(context.stub.lib_listByGenreId, paramId)
+      expect(response.result).equals(anyResult)
+    })
   })
 
   describe('POST /actors', () => {
