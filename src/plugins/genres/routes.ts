@@ -51,6 +51,11 @@ export const genreRoutes: ServerRoute[] = [{
   handler: getMostFrequentGenreByActorId,
   options: { validate: validateParamsId },
 },{
+  method: 'GET',
+  path: '/genres/GenreWithMovieAmountByActorId/{id}',
+  handler: getWithMovieAmount,
+  options: { validate: validateParamsId },
+},{
   method: 'PUT',
   path: '/genres/{id}',
   handler: put,
@@ -65,6 +70,13 @@ export const genreRoutes: ServerRoute[] = [{
 
 async function getAll(_req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
   return genres.list()
+}
+
+async function getWithMovieAmount(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
+  const { id } = (req.params as ParamsId)
+
+  const found = await genres.listWithMovieAmount(id)
+  return found || Boom.notFound()
 }
 
 async function get(req: Request, _h: ResponseToolkit, _err?: Error): Promise<Lifecycle.ReturnValue> {
