@@ -27,6 +27,17 @@ export function list(): Promise<Actor[]> {
   return knex.from('actor').select()
 }
 
+export function listByGenreId(genre_id: number): Promise<Actor[]> {
+  return knex
+    .count('movie_character.movie_id as movie_occurrences')
+    .innerJoin('movie_character', 'actor.id', 'movie_character.actor_id')
+    .innerJoin('movie_genre', 'movie_character.movie_id', 'movie_genre.movie_id')
+    .where({genre_id})
+    .select('actor.*').from('actor')
+    .groupBy('actor.id')
+    .orderBy('movie_occurrences', 'desc')
+}
+
 export function find(id: number): Promise<Actor> {
   return knex.from('actor').where({ id }).first()
 }
